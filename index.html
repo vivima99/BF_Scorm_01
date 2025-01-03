@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <title>Unity WebGL SCORM</title>
+</head>
+<body style="margin: 0; padding: 0; text-align: center; background-color: #231F20;">
+    <canvas id="unity-canvas" width="960" height="600" style="background: #231F20;"></canvas>
+
+    <!-- SCORM API Wrapper -->
+    <script src="scorm_api_wrapper.js"></script>
+
+    <!-- Unity Loader -->
+    <script src="Build/Bauforum_WebBuild_Scorm_1.loader.js"></script>
+
+    <script>
+        const canvas = document.querySelector("#unity-canvas");
+
+        // Initialize Unity WebGL
+        const unityInstance = createUnityInstance(canvas, {
+            dataUrl: "Build/Bauforum_WebBuild_Scorm_1.data",
+            frameworkUrl: "Build/Bauforum_WebBuild_Scorm_1.framework.js",
+            codeUrl: "Build/Bauforum_WebBuild_Scorm_1.wasm",
+        });
+
+        // SCORM Integration
+        unityInstance.then((instance) => {
+            console.log("Unity WebGL Loaded");
+
+            // Initialize SCORM
+            const scorm = new ScormApiWrapper();
+            if (!scorm.init()) {
+                console.error("SCORM initialization failed.");
+                return;
+            }
+
+            // Send score to SCORM
+            window.sendScoreToSCORM = function (score) {
+                console.log("Score sent to SCORM:", score);
+                scorm.set("cmi.score.raw", score);
+                scorm.set("cmi.score.min", 0);
+                scorm.set("cmi.score.max", 100);
+                scorm.set("cmi.completion_status", score >= 70 ? "completed" : "incomplete");
+                scorm.set("cmi.success_status", score >= 70 ? "passed" : "failed");
+                scorm.commit();
+            };
+
+            // Notify Unity that SCORM is ready
+            //instance.SendMessage("SCORMHandler", "OnSCORMReady");
+        });
+    </script>
+</body>
+</html>
