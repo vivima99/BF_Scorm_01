@@ -1,53 +1,43 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+  <head>
     <meta charset="utf-8">
-    <title>Unity WebGL SCORM</title>
-</head>
-<body style="margin: 0; padding: 0; text-align: center; background-color: #231F20;">
-    <canvas id="unity-canvas" width="960" height="600" style="background: #231F20;"></canvas>
-
-    <!-- SCORM API Wrapper -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity Web Player | Bauforum_WEB</title>
+  </head>
+  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
+    <canvas id="unity-canvas" width=960 height=600 tabindex="-1" style="width: 960px; height: 600px; background: #231F20"></canvas>
     <script src="scorm_api_wrapper.js"></script>
 
-    <!-- Unity Loader -->
     <script src="Build/Bauforum_WebBuild_Scorm_1.loader.js"></script>
-
     <script>
-        const canvas = document.querySelector("#unity-canvas");
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
 
-        // Initialize Unity WebGL
-        const unityInstance = createUnityInstance(canvas, {
-            dataUrl: "Build/Bauforum_WebBuild_Scorm_1.data",
-            frameworkUrl: "Build/Bauforum_WebBuild_Scorm_1.framework.js",
-            codeUrl: "Build/Bauforum_WebBuild_Scorm_1.wasm",
-        });
+        var canvas = document.querySelector("#unity-canvas");
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.position = "fixed";
 
-        // SCORM Integration
-        unityInstance.then((instance) => {
-            console.log("Unity WebGL Loaded");
+        document.body.style.textAlign = "left";
+      }
 
-            // Initialize SCORM
-            const scorm = new ScormApiWrapper();
-            if (!scorm.init()) {
-                console.error("SCORM initialization failed.");
-                return;
-            }
-
-            // Send score to SCORM
-            window.sendScoreToSCORM = function (score) {
-                console.log("Score sent to SCORM:", score);
-                scorm.set("cmi.score.raw", score);
-                scorm.set("cmi.score.min", 0);
-                scorm.set("cmi.score.max", 100);
-                scorm.set("cmi.completion_status", score >= 70 ? "completed" : "incomplete");
-                scorm.set("cmi.success_status", score >= 70 ? "passed" : "failed");
-                scorm.commit();
-            };
-
-            // Notify Unity that SCORM is ready
-            //instance.SendMessage("SCORMHandler", "OnSCORMReady");
-        });
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        arguments: [],
+        dataUrl: "Build/Bauforum_WebBuild_Scorm_1.data",
+        frameworkUrl: "Build/Bauforum_WebBuild_Scorm_1.framework.js",
+        codeUrl: "Build/Bauforum_WebBuild_Scorm_1.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "Bauforum_WEB",
+        productVersion: "1.0.2",
+        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+      });
     </script>
-</body>
+  </body>
 </html>
